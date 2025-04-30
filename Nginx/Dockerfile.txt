@@ -1,0 +1,24 @@
+FROM nginx:latest
+
+# Install curl and wget (useful for debugging, optional)
+RUN apt-get update && apt-get install -y curl wget
+
+# Download and install nginx-prometheus-exporter
+ENV EXPORTER_VERSION=0.11.0
+RUN wget https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v${EXPORTER_VERSION}/nginx-prometheus-exporter_${EXPORTER_VERSION}_linux_amd64.tar.gz && \
+    tar -xvzf nginx-prometheus-exporter_${EXPORTER_VERSION}_linux_amd64.tar.gz && \
+    mv nginx-prometheus-exporter /usr/local/bin/ && \
+    rm -rf nginx-prometheus-exporter_${EXPORTER_VERSION}_linux_amd64*
+
+# Expose NGINX and exporter ports
+EXPOSE 80 9113
+
+# Add default NGINX config if needed
+# (optional - for enabling stub_status metrics)
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Start both NGINX and exporter via a script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+CMD ["/start.sh"]
