@@ -1,0 +1,18 @@
+from flask import Flask, request
+import subprocess
+
+app = Flask(__name__)
+
+@app.route('/alert', methods=['POST'])
+def handle_alert():
+    data = request.get_json()
+    print("Received alert:", data)
+
+    try:
+        subprocess.run(['python3', 'trigger_ansible.py'], check=True)
+        return "Playbook executed successfully", 200
+    except subprocess.CalledProcessError as e:
+        return f"Playbook failed: {e}", 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
