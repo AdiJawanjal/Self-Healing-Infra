@@ -1,0 +1,11 @@
+groups:
+  - name: nginx.rules
+    rules:
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "NGINX container is down"
+          description: "NGINX Prometheus exporter has stopped responding on port 9113."
