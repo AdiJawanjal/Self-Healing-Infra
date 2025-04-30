@@ -1,0 +1,33 @@
+---
+- name: Restart NGINX Docker Container
+  hosts: webserver
+  become: true
+  tasks:
+
+    - name: Ensure Docker is installed
+      package:
+        name: docker
+        state: present
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Restart NGINX container if it is stopped
+      shell: |
+        {% raw %}
+        container_status=$(docker inspect -f '{{.State.Status}}' nginx || echo "not_found")
+
+        if [ "$container_status" = "exited" ] || [ "$container_status" = "created" ]; then
+          echo "Restarting NGINX container..."
+          docker start nginx
+        elif [ "$container_status" = "running" ]; then
+          echo "NGINX container is already running."
+        else
+          echo "NGINX container not found."
+        fi
+        {% endraw %}
+      args:
+        executable: /bin/bash
